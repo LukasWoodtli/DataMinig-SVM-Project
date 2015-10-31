@@ -4,6 +4,10 @@
 import sys
 import numpy as np
 
+from sklearn.kernel_approximation import RBFSampler
+
+WORKING_DIMENSION = 100
+inverse_kernel = RBFSampler(n_components=WORKING_DIMENSION)
 
 DIMENSION = 400  # Dimension of the original data.
 CLASSES = (-1, +1)   # The classes that we are trying to predict.
@@ -17,10 +21,11 @@ C = 0.001
 transform_param = 1
 
 def transform(x_original):
-    x_transformed = np.append(x_original, 0.0)
-    x_transformed = x_transformed / np.linalg.norm(x_transformed)
-    assert x_transformed.size == 401
-    return x_transformed
+    #x_transformed = np.append(x_original, 0.5)
+    #x_transformed = x_transformed / np.linalg.norm(x_transformed)
+    x_transformed = inverse_kernel.fit_transform(x_original)
+    assert x_transformed.size == WORKING_DIMENSION
+    return x_transformed[0]
 
 
 def dL_dw(xi, yi, w, j):
@@ -31,8 +36,8 @@ def dL_dw(xi, yi, w, j):
 
 
 def gradient(x,y,w):
-    assert w.size == 401
-    assert x.size == 401
+    assert w.size == WORKING_DIMENSION
+    assert x.size == WORKING_DIMENSION
     w_new = []
     for j, wj in enumerate(w):
         w_new.append(w[j] + C * dL_dw(x, y, w, j))
@@ -40,9 +45,9 @@ def gradient(x,y,w):
 
 
 def main(stream):
-    w = np.array([0.5 for i in range(DIMENSION + 1)])
+    w = np.array([0.5 for i in range(WORKING_DIMENSION)])
 
-    assert w.size == 401
+    assert w.size == WORKING_DIMENSION
 
 
     for line in stream[0:10000]:
@@ -53,9 +58,9 @@ def main(stream):
         x = transform(x_original)  # Use our features.
 
         w = w - ETHA * gradient(x, label, w)
-        assert w.size == 401
+        assert w.size == WORKING_DIMENSION
 
-    assert w.size == 401
+    assert w.size == WORKING_DIMENSION
     result = ""
     for i in w:
         result += "%f " % i
