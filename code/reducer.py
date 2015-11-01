@@ -8,11 +8,14 @@ import numpy as np
 def main(stream):
     number_of_elemts = 0
     lines = stream.splitlines()
-    w_new = np.array([0 for i in range(100)])
+    w_new = None
     for line in lines:
         line = line.strip()
         line = np.fromstring(line, sep=' ')
-        w_new = np.add(w_new, line)
+        if w_new:
+            w_new = np.add(w_new, line)
+        else:
+            w_new = line
 
 
         number_of_elemts += 1

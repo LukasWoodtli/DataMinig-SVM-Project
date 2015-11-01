@@ -5,9 +5,13 @@ import sys
 import numpy as np
 
 from sklearn.kernel_approximation import RBFSampler
+from sklearn.kernel_approximation import AdditiveChi2Sampler
+from sklearn.kernel_approximation import SkewedChi2Sampler
 
 WORKING_DIMENSION = 100
-inverse_kernel = RBFSampler(n_components=WORKING_DIMENSION)
+
+kernel = SkewedChi2Sampler(n_components=WORKING_DIMENSION)
+#inverse_kernel = RBFSampler(n_components=WORKING_DIMENSION)
 
 DIMENSION = 400  # Dimension of the original data.
 CLASSES = (-1, +1)   # The classes that we are trying to predict.
@@ -21,9 +25,12 @@ C = 0.001
 transform_param = 1
 
 def transform(x_original):
+    #x_transformed = x_original
     #x_transformed = np.append(x_original, 0.5)
     #x_transformed = x_transformed / np.linalg.norm(x_transformed)
-    x_transformed = inverse_kernel.fit_transform(x_original)
+    x_transformed = kernel.fit_transform(x_original)
+    #x_transformed = inverse_kernel.fit_transform(x_transformed)
+    print x_transformed.size
     assert x_transformed.size == WORKING_DIMENSION
     return x_transformed[0]
 
@@ -50,7 +57,7 @@ def main(stream):
     assert w.size == WORKING_DIMENSION
 
 
-    for line in stream[0:10000]:
+    for line in stream[:1000]:
         line = line.strip()
         (label, x_string) = line.split(" ", 1)
         label = int(label)
