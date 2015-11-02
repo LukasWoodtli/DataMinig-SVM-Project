@@ -45,7 +45,6 @@ def gradient(x,y,w):
 
     g_t = np.array(g_t)
     assert G_diag.size == 401
-    print g_t.size
     assert g_t.size == 401
 
     result = np.diagflat(G_diag)
@@ -78,7 +77,6 @@ def main(stream):
 
         assert w.size == 401
 
-    print w
     assert w.size == 401
     result = ""
     for i in w:
