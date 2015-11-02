@@ -12,9 +12,11 @@ EVALUATE_SCRIPT = os.path.join(WORKING_DIR, "evaluate.py")
 
 
 str = open(IN_FILE).readlines()
+str = str[:100]
 stream = mapper.main(str)
+
+stream = stream.splitlines()
 # #print stream
-#
 output = reducer.main(stream)
 #
 WEIGHTS_PATH = os.path.join(WORKING_DIR, "weights.txt")
