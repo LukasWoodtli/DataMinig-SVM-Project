@@ -63,7 +63,7 @@ def main(stream):
     assert w.size == 401
 
 
-    for line in stream[:100000]:
+    for line in stream:
         line = line.strip()
         (label, x_string) = line.split(" ", 1)
         label = int(label)
