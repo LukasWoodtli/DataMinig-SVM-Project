@@ -4,6 +4,8 @@
 import sys
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from math import sqrt
+
 scaler = StandardScaler()
 
 
@@ -11,7 +13,7 @@ DIMENSION = 400  # Dimension of the original data.
 CLASSES = (-1, +1)   # The classes that we are trying to predict.
 
 #ETHA = 0.005
-ETHA = 0.1
+ETHA = 1.0
 
 #C = 0.001
 
@@ -36,24 +38,19 @@ def dL_dw(xi, yi, w, j):
 def gradient(x,y,w):
     assert w.size == 401
     assert x.size == 401
-    global G
+    global G_diag
 
-    g_t = []
+
     for j, wj in enumerate(w):
-        g_t.append(dL_dw(x, y, w, j))
-        G_diag[j] = G_diag[j] + g_t[j]**2
-
-    g_t = np.array(g_t)
-    assert G_diag.size == 401
-    assert g_t.size == 401
-
-    result = np.diagflat(G_diag)
-    result = np.diag(result)
-    result = np.sqrt(result)
-    result = np.divide(ETHA, result)
-
-    assert result.size == 401
-    return w - result * g_t
+        g_tj = dL_dw(x, y, w, j)
+        G_diag[j] = G_diag[j] + g_tj**2
+        if G_diag[j] == 0:
+            w[j] = wj
+        else:
+            w[j] = wj - ETHA / sqrt(G_diag[j]) * g_tj
+    #result = np.diag(result)
+    assert w.size == 401
+    return w
 
 
 def main(stream):
@@ -69,14 +66,12 @@ def main(stream):
         x_original = np.fromstring(x_string, sep=' ')
         x = transform(x_original)  # Use our features.
 
-        grad = gradient(x, label, w)
-        w_old = w
-        w = w - grad
-        if np.linalg.norm(w_old - w) < 0.001: break
+        w = gradient(x, label, w)
 
 
         assert w.size == 401
 
+    print w
     assert w.size == 401
     result = ""
     for i in w:

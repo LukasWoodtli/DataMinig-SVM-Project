@@ -12,13 +12,14 @@ EVALUATE_SCRIPT = os.path.join(WORKING_DIR, "evaluate.py")
 
 
 str = open(IN_FILE).readlines()
-#str = str
+#str = str[:100000]
 stream = mapper.main(str)
 
 stream = stream.splitlines()
-# #print stream
+#print stream
+
 output = reducer.main(stream)
-#
+
 WEIGHTS_PATH = os.path.join(WORKING_DIR, "weights.txt")
 with open(WEIGHTS_PATH, 'w') as weight_f:
      weight_f.write(output)
