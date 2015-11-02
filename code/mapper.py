@@ -45,7 +45,7 @@ def main(stream):
     assert w.size == 401
 
 
-    for line in stream[0:10000]:
+    for line in stream:
         line = line.strip()
         (label, x_string) = line.split(" ", 1)
         label = int(label)
@@ -61,7 +61,7 @@ def main(stream):
         result += "%f " % i
     return result
 
+
 if __name__ == "__main__":
    print main(sys.stdin)
-
 
