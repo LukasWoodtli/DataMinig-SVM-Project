@@ -12,7 +12,7 @@ EVALUATE_SCRIPT = os.path.join(WORKING_DIR, "evaluate.py")
 
 
 str = open(IN_FILE).readlines()
-str = str[:100]
+#str = str
 stream = mapper.main(str)
 
 stream = stream.splitlines()

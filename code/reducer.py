@@ -11,14 +11,12 @@ def main(stream):
     for line in stream:
         line = line.strip()
         line = np.fromstring(line, sep=' ')
-        print line.size
         assert line.size == 401
         if w_new:
             w_new = np.add(w_new, line)
         else:
             w_new = line
         assert line.size == 401
-        print w_new
         number_of_elemts += 1
 
     w = np.divide(w_new, number_of_elemts)
