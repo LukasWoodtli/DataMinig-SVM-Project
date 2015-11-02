@@ -38,16 +38,21 @@ def gradient(x,y,w):
     assert x.size == 401
     global G
 
+    g_t = []
     for j, wj in enumerate(w):
-        g_t = dL_dw(x, y, w, j)
-        G_diag[j] = G_diag[j] + g_t**2
+        g_t.append(dL_dw(x, y, w, j))
+        G_diag[j] = G_diag[j] + g_t[j]**2
 
-    assert  G_diag.size == 401
+    g_t = np.array(g_t)
+    assert G_diag.size == 401
+    print g_t.size
+    assert g_t.size == 401
 
     result = np.diagflat(G_diag)
+    result = np.diag(result)
     result = np.sqrt(result)
     result = np.divide(ETHA, result)
-    result = np.diag(result)
+
     assert result.size == 401
     return w - result * g_t
 
@@ -58,7 +63,7 @@ def main(stream):
     assert w.size == 401
 
 
-    for line in stream:
+    for line in stream[:100000]:
         line = line.strip()
         (label, x_string) = line.split(" ", 1)
         label = int(label)
