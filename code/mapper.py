@@ -4,64 +4,47 @@
 import sys
 import numpy as np
 
+from sklearn.kernel_approximation import  RBFSampler
+from sklearn.linear_model import  SGDClassifier
+
 
 DIMENSION = 400  # Dimension of the original data.
 CLASSES = (-1, +1)   # The classes that we are trying to predict.
 
-#ETHA = 0.005
-ETHA = 0.005
 
-#C = 0.001
-C = 0.001
 
-transform_param = 1
+rbfSampler = RBFSampler(n_components=100)
+fitter_array = np.ndarray(DIMENSION)
+fitter_array.fill(0)
+rbfSampler.fit(fitter_array)
+
+sgd = SGDClassifier()
+
 
 def transform(x_original):
-    x_transformed = np.append(x_original, 0.0)
-    x_transformed = x_transformed / np.linalg.norm(x_transformed)
-    assert x_transformed.size == 401
-    return x_transformed
-
-
-def dL_dw(xi, yi, w, j):
-    if (yi * np.inner(w, xi)) >= 1:
-        return 0
-    else:
-        return (-1) * yi * xi[j]
-
-
-def gradient(x,y,w):
-    assert w.size == 401
-    assert x.size == 401
-    w_new = []
-    for j, wj in enumerate(w):
-        w_new.append(w[j] + C * dL_dw(x, y, w, j))
-    return np.array(w_new)
-
+    return rbfSampler.transform(x_original)
 
 def main(stream):
-    w = np.array([0.5 for i in range(DIMENSION + 1)])
-
-    assert w.size == 401
-
+    all_data = []
+    all_label = []
 
     for line in stream:
         line = line.strip()
         (label, x_string) = line.split(" ", 1)
         label = int(label)
+        all_label.append(label)
         x_original = np.fromstring(x_string, sep=' ')
         x = transform(x_original)  # Use our features.
+        all_data.append(x)
 
-        w = w - ETHA * gradient(x, label, w)
-        assert w.size == 401
+    all_label = np.array(all_label)
+    all_data = np.array(all_data)
+    print all_data
+    sgd.fit(all_data, all_label)
 
-    assert w.size == 401
-    result = ""
-    for i in w:
-        result += "%f " % i
-    return result
+    print sgd._coeff
+
 
 
 if __name__ == "__main__":
-   print main(sys.stdin)
-
+    main(sys.stdin)
