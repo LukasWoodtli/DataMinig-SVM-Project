@@ -7,13 +7,14 @@ import numpy as np
 
 def main(stream):
     number_of_elemts = 0
-    w_new = np.array([0 for i in range(401)])
+    w_new = None
     for line in stream.splitlines():
         line = line.strip()
         line = np.fromstring(line, sep=' ')
-        assert line.size == 401
-        w_new = np.add(w_new, line)
-        assert line.size == 401
+        if w_new:
+            w_new = np.add(w_new, line)
+        else:
+            w_new = line
 
         number_of_elemts += 1
 

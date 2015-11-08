@@ -4,25 +4,22 @@
 import logging
 import sys
 import numpy as np
+import mapper
 
-if __name__ == "__main__":
-    if not len(sys.argv) == 5:
-        logging.error("Usage: evaluate.py weights.txt "
-                      "test_data.txt test_labels.txt folder_with_mapper")
-        sys.exit(1)
+def main(input):
 
     # IMPORTANT: We must use the same feature transformation.
-    sys.path.append(sys.argv[4])
-    print sys.path
+    #sys.path.append(input[4])
+    #print sys.path
     from mapper import transform
 
-    with open(sys.argv[1], "r") as fp_weights:
+    with open(input[1], "r") as fp_weights:
         weights = np.genfromtxt(fp_weights).flatten()
 
     accuracy = 0
     total = 0
-    with open(sys.argv[2], "r") as fp_data:
-        with open(sys.argv[3], "r") as fp_labels:
+    with open(input[2], "r") as fp_data:
+        with open(input[3], "r") as fp_labels:
             for (x_string, label_string) in zip(fp_data, fp_labels):
                 x_string = x_string.strip()
                 label_string = label_string.strip()
@@ -53,3 +50,10 @@ if __name__ == "__main__":
                 total += 1
 
     print("%f" % (float(accuracy) / total))
+
+if __name__ == "__main__":
+    if not len(sys.argv) == 5:
+        logging.error("Usage: evaluate.py weights.txt "
+                      "test_data.txt test_labels.txt folder_with_mapper")
+        sys.exit(1)
+    main(sys.argv)
