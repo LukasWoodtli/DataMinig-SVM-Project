@@ -32,47 +32,36 @@ IN_FILE = os.path.join(WORKING_DIR, "..", "data", "xaj")
 
 EVALUATE_SCRIPT = os.path.join(WORKING_DIR, "evaluate.py")
 
-for components in [200]:
-    for g in [0.01, 0.05, 0.2]:
-        for a in [0.3, 0.5, 0.9, 2]:
+mapper.rbf_feature = RBFSampler(gamma=0.1, n_components=200, random_state=42)
+fitter = np.ndarray(shape=(DIMENSION))
+fitter.fill(0)
+mapper.rbf_feature.fit(fitter)
 
-            print "=" * 20
-            print "Components: ", components
-            print "Gamma: ", g
-            print "Alpha: :", a
+str = open(IN_FILE).read()
+stream = mapper.main(str)
+# #print stream
 
-            mapper.rbf_feature = RBFSampler(gamma=g, n_components=components, random_state=42)
-            fitter = np.ndarray(shape=(DIMENSION))
-            fitter.fill(0)
-            mapper.rbf_feature.fit(fitter)
-
-            mapper.clf = SVC(kernel='linear') #SGDClassifier(loss='hinge', penalty ='l2', alpha=a,  n_jobs=-1, random_state=43)
-
-            str = open(IN_FILE).read()
-            stream = mapper.main(str)
-            # #print stream
-            #
-            output = reducer.main(stream)
-            #
-            WEIGHTS_PATH = os.path.join(WORKING_DIR, "weights.txt")
-            with open(WEIGHTS_PATH, 'w') as weight_f:
-                 weight_f.write(output)
-            # #print output
+output = reducer.main(stream)git
+# #
+WEIGHTS_PATH = os.path.join(WORKING_DIR, "weights.txt")
+with open(WEIGHTS_PATH, 'w') as weight_f:
+      weight_f.write(output)
+    # #print output
+#
 
 
 
+# Usage: evaluate.py weights.txt
+# test_data.txt test_labels.txt folder_with_mapper
+command_line = [EVALUATE_SCRIPT]
+command_line.append(WEIGHTS_PATH)
+command_line.append(os.path.join(WORKING_DIR, "test_data.txt"))
+command_line.append(os.path.join(WORKING_DIR, "test_labels.txt"))
+command_line.append(WORKING_DIR)
 
-            # Usage: evaluate.py weights.txt
-            # test_data.txt test_labels.txt folder_with_mapper
-            command_line = [EVALUATE_SCRIPT]
-            command_line.append(WEIGHTS_PATH)
-            command_line.append(os.path.join(WORKING_DIR, "test_data.txt"))
-            command_line.append(os.path.join(WORKING_DIR, "test_labels.txt"))
-            command_line.append(WORKING_DIR)
-
-            #command_line = " ".join(command_line)
+#command_line = " ".join(command_line)
 
 
-            evaluate.main(command_line)
+evaluate.main(command_line)
 
 
