@@ -57,33 +57,24 @@ def transform(x_original):
 
 \end{lstlisting}
 
-After the transformation the stochastic gradient descent implementation of scikit learn is used in order to find an optimal weight vector w. This is done for batches of size 100.
+After the transformation the stochastic gradient descent implementation of scikit learn is used in order to find an optimal weight vector w. This is done for all the data points that a mapper receives.
 
 \begin{lstlisting}[language=Python]
+data = sys.stdin.read()
 
-# create and use classifier and transformer
-clf = SGDClassifier(loss="hinge", alpha=0.0000001, 
-			fit_intercept=False, average=True)
+# prepare data
+data = np.fromstring(data, sep=' ')
+data = np.reshape(data,(-1,DIMENSION+1))
+Y = data[:, 0]
+X = data[:, 1:DIMENSION+1]
 
-# read and format data
-currentBatch = ""
-for i, line in enumerate(sys.stdin):
-	if i % BATCHSIZE == 0 and i != 0:
-	    # prepare current batch
-		data = np.fromstring(currentBatch, sep=' ')
-		data = np.reshape(data,(-1,DIMENSION+1))
-		Y = data[:, 0]
-		X = data[:, 1:DIMENSION+1]
-
-		# Do the transformation for each x
-		x_transformed = np.array([transform(x) for x in X])
-
-		# fit current batch partially
-		clf.partial_fit(x_transformed, Y, classes=np.array(CLASSES))
-
-		# clear batch
-		currentBatch = ""
-	currentBatch += line
+# Do the transformation for each x
+x_transformed = np.array([transform(x) for x in X])
+clf = SGDClassifier(loss='modified_huber', alpha=0.00000001, fit_intercept=False, average=True, n_iter=10, n_jobs=-1, penalty="l2")
+    
+clf.fit(x_transformed, Y)
+result = ' '.join(' '.join(str(cell) for cell in row) for row in clf.coef_)
+print result
 
 \end{lstlisting}
 
@@ -93,12 +84,10 @@ At the end the resulting weight vector w is sent to the reducer.
 
 The reducer just calculates the average of the weight vectors from the different mappers. 
 
-\subsection{Improvement}
-
-???
 
 \subsection{Conclusion}
 
-This project shows that linear classifiers like support vector machines can also be used for data which is not linearly separable. But in order to do this a transformation step is needed. The data needs to be transformed into a high-dimensional space where the data is separable. Doing this based on random fourier features turned out to be a good approach for the data provided for this project.
+This project shows that linear classifiers like support vector machines can also be used for data which is not linearly separable. But in order to do this a transformation step is needed. The data needs to be transformed into a high-dimensional space where the data is separable. Doing this based on random fourier features turned out to be a good approach for the data provided for this project. But a lot
+of work is needed to tunne the algorithms for getting good results for the given problem.
 
 \end{document} 
