@@ -1,67 +1,55 @@
+
 #!/local/anaconda/bin/python
 # IMPORTANT: leave the above line as is.
-
 import sys
-import numpy as np
+import numpy as np 
+import time
+from sklearn.linear_model import SGDClassifier
+from sklearn.kernel_approximation import RBFSampler
+from sklearn.preprocessing import StandardScaler
+from sklearn.grid_search import GridSearchCV
 
-
+# CONFIG
 DIMENSION = 400  # Dimension of the original data.
-CLASSES = (-1, +1)   # The classes that we are trying to predict.
+CLASSES = [+1, -1]   # The classes that we are trying to predict.
+D = 1000
 
-#ETHA = 0.005
-ETHA = 0.005
 
-#C = 0.001
-C = 0.001
+#precomputed attributes of the data
+LEAST_IMPORTANT_DIMENSIONS = [ 5, 12, 20, 25, 26, 33, 36, 37, 38, 40, 49, 50, 67, 68, 74, 75, 84, 87, 89, 91, 94, 96, 97, 99, 101, 105, 106, 107, 110, 117, 
+					  123, 125, 137, 139, 148, 152, 153, 154, 166, 167, 168, 169, 173, 177, 188, 193, 199, 201, 202, 203, 206, 214, 217, 220, 223, 
+					  225, 235, 236, 242, 244, 245, 248, 250, 253, 254, 256, 257, 258, 272, 280, 284, 285, 287, 295, 297, 300, 302, 308, 313, 316, 
+					  325, 326, 330, 337, 338, 339, 353, 355, 356, 360, 367, 372, 380, 382, 385, 386, 387, 390, 395, 399]
+VARIANCE = 200
 
-transform_param = 1
-
+# The call for the transformation
+np.random.seed(42)
+omegas = np.random.multivariate_normal(np.zeros(DIMENSION-100),VARIANCE*np.eye(DIMENSION-100),D)
+bs = 2. *np.pi*np.random.random(D)
+prefactor = np.sqrt(2./1000.) # precalculate for performance issues
 def transform(x_original):
-    x_transformed = np.append(x_original, 0.0)
-    x_transformed = x_transformed / np.linalg.norm(x_transformed)
-    assert x_transformed.size == 401
-    return x_transformed
+	x_transformed = x_original
+	x_transformed = np.delete(np.array(x_transformed), LEAST_IMPORTANT_DIMENSIONS)
+	return prefactor * np.array(map( lambda omega,b: np.cos(np.dot(omega,x_transformed)+b) ,omegas,bs))
 
 
-def dL_dw(xi, yi, w, j):
-    if (yi * np.inner(w, xi)) >= 1:
-        return 0
-    else:
-        return (-1) * yi * xi[j]
-
-
-def gradient(x,y,w):
-    assert w.size == 401
-    assert x.size == 401
-    w_new = []
-    for j, wj in enumerate(w):
-        w_new.append(w[j] + C * dL_dw(x, y, w, j))
-    return np.array(w_new)
-
-
-def main(stream):
-    w = np.array([0.5 for i in range(DIMENSION + 1)])
-
-    assert w.size == 401
-
-
-    for line in stream:
-        line = line.strip()
-        (label, x_string) = line.split(" ", 1)
-        label = int(label)
-        x_original = np.fromstring(x_string, sep=' ')
-        x = transform(x_original)  # Use our features.
-
-        w = w - ETHA * gradient(x, label, w)
-        assert w.size == 401
-
-    assert w.size == 401
-    result = ""
-    for i in w:
-        result += "%f " % i
-    return result
 
 
 if __name__ == "__main__":
-   print main(sys.stdin)
 
+	# read and format data
+	data = sys.stdin.read()
+
+	# prepare data
+	data = np.fromstring(data, sep=' ')
+	data = np.reshape(data,(-1,DIMENSION+1))
+	Y = data[:, 0]
+	X = data[:, 1:DIMENSION+1]
+
+	# Do the transformation for each x
+	x_transformed = np.array([transform(x) for x in X])
+	clf = SGDClassifier(loss='modified_huber', alpha=0.00000001, fit_intercept=False, average=True, n_iter=10, n_jobs=-1, penalty="l2")
+    
+	clf.fit(x_transformed, Y)
+	result = ' '.join(' '.join(str(cell) for cell in row) for row in clf.coef_)
+	print result
